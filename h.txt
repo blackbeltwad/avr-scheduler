@@ -1,0 +1,2 @@
+I need this maybe for later:
+bear -- avr-gcc -mmcu=atmega328p -Os -c *.c

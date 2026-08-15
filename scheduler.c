@@ -10,14 +10,13 @@ struct Task {
 
 // State machine for what functions runs next
 int Task_Create(struct Task *task, int (*func)(void)) {
-  // Set a canary
-  task->stack[0] = 0xFF;
 
-  // Set the stack pointer
-  task->sp = task->stack;
+  task->stack[0] = 0xFF; // Set a canary
+
+  task->sp = task->stack; // Set the stack pointer
   task->sp += 254;
 
-  // Need to give fake info on the first context switch
+  // PC needs an adress to give cpu
   *(int (**)(void))(task->sp) = func;
 
   // Might add garbage values depending on context switch configuration

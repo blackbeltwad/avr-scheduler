@@ -1,0 +1,17 @@
+# Compiled AVR files
+*.o
+*.elf
+*.hex
+*.eep
+*.map
+*.lss
+
+# Build output
+build/
+dist/
+
+# Compilation database
+compile_commands.json
+
+# macOS
+.DS_Store

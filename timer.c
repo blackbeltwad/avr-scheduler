@@ -1,3 +1,21 @@
+#include <avr/common.h>
 #include <avr/io.h>
 
-void timer_int() {}
+void timer_int() {
+  // Set global interrupts
+  SREG |= (1 << 7);
+
+  // Set the timer to normal
+  TCCR0A |= (1 << 1);
+  TCCR0A &= ~(1 << 0);
+  TCCR0B &= ~((1 << 3));
+
+  // Set the context switch to occur in roughly ~10ms
+  TCCR0B |= (1 << 2);
+  TCCR0B &= ~(1 << 1);
+  TCCR0B |= (1 << 0);
+  OCR0A = 158;
+  // Set the interrupts on OCR0A match
+  TIMSK0 |= (1 << 1);
+  TIFR0 |= (1 << 1);
+}
