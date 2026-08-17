@@ -1,7 +1,8 @@
+#include "timer.h"
 #include <avr/common.h>
 #include <avr/io.h>
 
-void timer_int() {
+void timer_init(void) {
   // Set global interrupts
   SREG |= (1 << 7);
 
