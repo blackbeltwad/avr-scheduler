@@ -10,10 +10,9 @@ int main(void) {
   struct Task B;
   struct Task C;
   // Task Creation
-  Task_Create(&A, &B, FuncA);
-  Task_Create(&B, &C, FuncB);
-  Task_Create(&C, &A, FuncC);
-  timer_init();
+  Task_Create(&A, &FuncA);
+  Task_Create(&B, &FuncB);
+  Task_Create(&C, &FuncC);
 }
 
 void FuncA(void) {

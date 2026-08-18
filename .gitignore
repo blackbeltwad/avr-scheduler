@@ -5,11 +5,11 @@
 *.eep
 *.map
 *.lss
-
+*.clangd
 # Build output
 build/
 dist/
-
+*.cache/
 # Compilation database
 compile_commands.json
 
