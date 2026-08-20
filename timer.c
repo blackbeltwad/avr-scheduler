@@ -19,4 +19,6 @@ void timer_init(void) {
   // Set the interrupts on OCR0A match
   TIMSK0 |= (1 << 1);
   TIFR0 |= (1 << 1);
+  while (1) {
+  }
 }

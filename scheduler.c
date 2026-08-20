@@ -3,7 +3,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <stdint.h>
-#define MAX_SIZE 128
+#define MAX_SIZE 256
 
 // Define Globals
 
@@ -14,16 +14,21 @@ void Task_Create(struct Task *task, void (*Func)(void)) {
 
   ptrs.cur++;
   ptrs.max++;
-  task->sp = &task->stack[127];
+  task->sp = (volatile uint16_t *)&task->stack[255];
 
   // Point stack at top and put return address there for PC
   task->stack[0] = 0xFF; // Set a canary
-  *(void (**)(void))(task->sp) = Func;
+  uint16_t f = (uint16_t)(Func);
+  volatile uint8_t h = (volatile uint8_t)(f >> 8);
+  volatile uint8_t l = (volatile uint8_t)(f);
+  *(volatile uint8_t *)task->sp = l;
+  task->sp = (volatile uint16_t *)((volatile uint8_t *)task->sp - 1);
+  *(volatile uint8_t *)task->sp = h;
   ptrs.stacks[ptrs.cur] = task->sp;
 }
 
-ISR(TIMER1_COMPA_vect) {
-  context_swtich_push();
+ISR(TIMER0_COMPA_vect) {
+  context_switch_push();
   ptrs.stacks[ptrs.cur] = (volatile uint16_t *)((SPH << 8) | (SPL));
   if (ptrs.cur == ptrs.max) {
     ptrs.cur = 0;

@@ -1,12 +1,16 @@
 // hey lol
 .text
-.include "m328pdef.inc"
+#include <avr/io.h>
 .global context_switch_push
 .global context_switch_pop
 
 context_switch_push:
-  push R0;
-  push R1;
+  push R26;
+  push R27;
+  LDS R27, SPH;
+  LDS R26, SPL;
+
+
   push R2;
   push R3;
   push R4;
@@ -36,4 +40,6 @@ context_switch_push:
   push R29;
   push R30;
   push R31;
-
+  RET;
+  context_switch_pop:
+    RET;    

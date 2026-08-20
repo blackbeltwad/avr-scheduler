@@ -6,7 +6,7 @@ CC = avr-gcc
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -g3 -O0 -Wall -Wextra
 
 TARGET = scheduler
-SRC = main.c scheduler.c timer.c
+SRC = main.c scheduler.c timer.c context.S
 
 all: $(TARGET).elf
 

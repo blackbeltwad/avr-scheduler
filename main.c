@@ -13,6 +13,7 @@ int main(void) {
   Task_Create(&A, &FuncA);
   Task_Create(&B, &FuncB);
   Task_Create(&C, &FuncC);
+  timer_init();
 }
 
 void FuncA(void) {
