@@ -11,12 +11,11 @@ struct Task {
 };
 
 struct Current_Task {
-  volatile uint16_t *stacks[MAX_STACKS];
+  volatile uint16_t stacks[MAX_STACKS];
   volatile int8_t cur;
   volatile int8_t max;
 };
 
 void Task_Create(struct Task *task, void (*Func)(void));
-extern void context_switch_push(void);
-extern void context_switch_pop(void);
+void context_switch(void);
 #endif
