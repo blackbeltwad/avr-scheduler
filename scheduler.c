@@ -5,9 +5,8 @@
 #include <avr/io.h>
 #include <stdint.h>
 #define MAX_SIZE 256
-
+#define SPH (*(volatile unsigned char *)0x5E)
 // Define Globals
-
 struct Current_Task ptrs = {.stacks = {0}, .cur = -1, .max = -1};
 
 // State machine for what functions runs next
@@ -28,15 +27,15 @@ void Task_Create(struct Task *task, void (*Func)(void)) {
   ptrs.stacks[ptrs.cur] = (uint16_t)task->sp;
 }
 
-void context_switch(void) {
+void context_switch(uint16_t address) {
   // Use built in SP to increase or decrease pointer
-
-  ptrs.stacks[ptrs.cur] = (uint16_t)SP;
+  ptrs.stacks[ptrs.cur] = address;
   if (ptrs.cur == ptrs.max) {
     ptrs.cur = 0;
   } else {
     ptrs.cur++;
   }
   // Change stack pointers
-  SP = (uint16_t)ptrs.stacks[ptrs.cur];
+  SPH = (uint8_t)(ptrs.stacks[ptrs.cur] >> 8);
+  SPL = (uint8_t)(ptrs.stacks[ptrs.cur] & 0x00FF);
 }

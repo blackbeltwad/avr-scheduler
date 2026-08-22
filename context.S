@@ -35,6 +35,45 @@ TIMER0_COMPA_vect:
   push R29
   push R30
   push R31
-  call context_switch
-  clr R1
-  RET
+  LDS R25, 0x005f; SREG REGISTER
+  push R25
+  LDS R25, 0x005E; SEND SPH AND SPL TO C FUNCTION
+  LDS R24, 0x005D
+  ADIW R24, 1
+  call context_switch; SWAP STACK POINTERS
+  pop R0; Store Sreg is R0 only trigger at the end
+  pop R31
+  pop R30
+  pop R29
+  pop R28
+  pop R27
+  pop R26
+  pop R25
+  pop R24
+  pop R23
+  pop R22
+  pop R21
+  pop R20
+  pop R19
+  pop R18
+  pop R17
+  pop R16
+  pop R15
+  pop R14
+  pop R13
+  pop R12
+  pop R11
+  pop R10
+  pop R9
+  pop R8
+  pop R7
+  pop R6
+  pop R5
+  pop R4
+  pop R3
+  pop R2
+  pop R1
+  SBR R0, 128; ENABLE GLOBAL INTERRUPTS
+  STS 0x005F, R0; UPDATE SREG REGISTER
+  pop R0;
+  RET; SUCCESSFUL CONTEXT SWITCH
