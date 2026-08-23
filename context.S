@@ -42,6 +42,7 @@ TIMER0_COMPA_vect:
   ADIW R24, 1
   call context_switch; SWAP STACK POINTERS
   pop R0; Store Sreg is R0 only trigger at the end
+  STS 0x005f, R0
   pop R31
   pop R30
   pop R29
@@ -73,7 +74,6 @@ TIMER0_COMPA_vect:
   pop R3
   pop R2
   pop R1
-  SBR R0, 128; ENABLE GLOBAL INTERRUPTS
-  STS 0x005F, R0; UPDATE SREG REGISTER
-  pop R0;
+  pop R0
+  SEI
   RET; SUCCESSFUL CONTEXT SWITCH

@@ -1,10 +1,8 @@
 #include "timer.h"
+#include "scheduler.h"
 #include <avr/common.h>
 #include <avr/io.h>
-
 void timer_init(void) {
-  // Set global interrupts
-  SREG |= (1 << 7);
 
   // Set the timer to normal
   TCCR0A |= (1 << 1);
@@ -19,6 +17,10 @@ void timer_init(void) {
   // Set the interrupts on OCR0A match
   TIMSK0 |= (1 << 1);
   TIFR0 |= (1 << 1);
+  context_fill();
+  // Set global interrupts
+  SREG |= (1 << 7);
+
   while (1) {
   }
 }
