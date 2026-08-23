@@ -27,7 +27,7 @@ void Task_Create(struct Task *task, void (*Func)(void)) {
   ptrs.stacks[ptrs.cur] = (uint16_t)task->sp;
 }
 
-void context_fill(void) {
+void context_fill() {
   // Move SP of tasks to correct spot; that is not being PUSHED FIRST
   for (int8_t i = 0; i < ptrs.max; i++) {
     if (i != ptrs.cur) {
@@ -36,7 +36,7 @@ void context_fill(void) {
     }
   }
 }
-void scheduler_start(void) {
+void scheduler_start() {
   // Get the high and low bytes of the function pointer that is stored on the
   // STACK
   uint16_t h = *(uint16_t *)ptrs.stacks[ptrs.cur];
@@ -59,7 +59,20 @@ void context_switch(uint16_t address) {
   } else {
     ptrs.cur++;
   }
+  uint16_t x = ((uint16_t)(SPH) << 8) | (uint16_t)(SPL);
   // Change stack pointers
   SPH = (uint8_t)(ptrs.stacks[ptrs.cur] >> 8);
   SPL = (uint8_t)(ptrs.stacks[ptrs.cur] & 0x00FF);
+
+  // Hardcode the old stack yes im like that
+  uint16_t y = ((uint16_t)(SPH) << 8) | (uint16_t)(SPL);
+  y -= 6;
+  for (int i = 0; i < 6; i++) {
+    *(uint16_t *)y = *(uint16_t *)x;
+    y++;
+    x++;
+  }
+  y -= 6;
+  SPH = (uint8_t)(y >> 8);
+  SPL = (uint8_t)(y & 0x00FF);
 }
