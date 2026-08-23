@@ -20,7 +20,7 @@ void timer_init(void) {
   context_fill();
   // Set global interrupts
   SREG |= (1 << 7);
-
+  scheduler_start();
   while (1) {
   }
 }

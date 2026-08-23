@@ -32,7 +32,7 @@ void context_fill(void) {
   for (int8_t i = 0; i < ptrs.max; i++) {
     if (i != ptrs.cur) {
       ptrs.stacks[i] = ptrs.stacks[i] - 33;
-      ptrs.stacks[i] = 0x0000; // Make sure SREG has all flags OFF
+      *(uint16_t *)ptrs.stacks[i] = 0x0000; // Make sure SREG has all flags OFF
     }
   }
 }
@@ -40,12 +40,14 @@ void scheduler_start(void) {
   // Get the high and low bytes of the function pointer that is stored on the
   // STACK
   uint16_t h = *(uint16_t *)ptrs.stacks[ptrs.cur];
+  h = h << 8;
   uint16_t l = *(uint16_t *)(ptrs.stacks[ptrs.cur] + 1);
-  void (*start)(void) = (void(*))((h << 8) | l);
-
+  l = l & 0x00FF;
+  void (*start)(void) = (void(*))(h | l);
+  ptrs.stacks[ptrs.cur] = ptrs.stacks[ptrs.cur] + 1;
   // Set stack pointer to end of the TASK[255]
-  SPH = (ptrs.stacks[ptrs.cur] - 1) >> 8;
-  SPL = ptrs.stacks[ptrs.cur] - 1;
+  SPH = (ptrs.stacks[ptrs.cur]) >> 8;
+  SPL = ptrs.stacks[ptrs.cur];
   start();
 }
 
