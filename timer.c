@@ -5,18 +5,21 @@
 void timer_init(void) {
 
   // Set the timer to normal
-  TCCR0A |= (1 << 1);
-  TCCR0A &= ~(1 << 0);
-  TCCR0B &= ~((1 << 3));
-
+  TCCR1A &= ~(1 << 1);
+  TCCR1A &= ~(1 << 0);
+  TCCR1B |= ((1 << 3));
+  TCCR1B &= ~(1 << 4);
   // Set the context switch to occur in roughly ~10ms
-  TCCR0B |= (1 << 2);
-  TCCR0B &= ~(1 << 1);
-  TCCR0B |= (1 << 0);
-  OCR0A = 158;
+
+  TCCR1B |= (1 << 2);
+  TCCR1B &= ~(1 << 1);
+  TCCR1B |= (1 << 0);
+  OCR1AH = 0x3D;
+  OCR1AL = 0x09;
+
   // Set the interrupts on OCR0A match
-  TIMSK0 |= (1 << 1);
-  TIFR0 |= (1 << 1);
+  TIMSK1 |= (1 << 1);
+  TIFR1 |= (1 << 1);
   context_fill();
   // Set global interrupts
   SREG |= (1 << 7);

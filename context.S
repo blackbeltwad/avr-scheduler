@@ -1,10 +1,9 @@
 // hey lol
 .text
 #include <avr/io.h>
-.global TIMER0_COMPA_vect
+.global TIMER1_COMPA_vect
 .global ptrs
-.extern context_switch
-TIMER0_COMPA_vect:
+TIMER1_COMPA_vect:
   push R0
   push R1
   push R2
@@ -40,7 +39,7 @@ TIMER0_COMPA_vect:
   push R25
   LDS R25, 0x005E; SPH
   LDS R24, 0x005D; SPL
-  ADIW R24, 1; Add by 1 so were at the address where SREG was pushed
+  ;ADIW R24, 1 THIS LINE WAS BREAKING EVERYTHING I GUESS POP DECREMENTS BEFORE POPPING 
   CLR R1 
   ; Get the ptrs address. ptrs is 12 bytes total, stacks is 10, cur and max are 1 
   ; Stack is (0 - 9), Cur is (10), Max is (11)
@@ -131,4 +130,4 @@ done:
   pop R1
   pop R0
   SEI
-  RET; SUCCESSFUL CONTEXT SWITCH
+  RETI; SUCCESSFUL CONTEXT SWITCH

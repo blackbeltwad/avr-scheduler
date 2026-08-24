@@ -31,7 +31,7 @@ void context_fill(void) {
   // Move SP of tasks to correct spot; that is not being PUSHED FIRST
   for (int8_t i = 0; i < ptrs.max; i++) {
     if (i != ptrs.cur) {
-      ptrs.stacks[i] = ptrs.stacks[i] - 33;
+      ptrs.stacks[i] = ptrs.stacks[i] - 34;
       *(uint16_t *)ptrs.stacks[i] = 0x0000; // Make sure SREG has all flags OFF
     }
   }
