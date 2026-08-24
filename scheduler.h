@@ -18,7 +18,6 @@ struct Current_Task {
 };
 
 void Task_Create(struct Task *task, void (*Func)(void));
-void context_switch(uint16_t address);
 void context_fill(void);
 void scheduler_start(void);
 

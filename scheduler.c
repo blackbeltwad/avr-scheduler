@@ -50,16 +50,3 @@ void scheduler_start(void) {
   SPL = ptrs.stacks[ptrs.cur];
   start();
 }
-
-void context_switch(uint16_t address) {
-  // Use built in SP to increase or decrease pointer
-  ptrs.stacks[ptrs.cur] = address;
-  if (ptrs.cur == ptrs.max) {
-    ptrs.cur = 0;
-  } else {
-    ptrs.cur++;
-  }
-  // Change stack pointers
-  SPH = (uint8_t)(ptrs.stacks[ptrs.cur] >> 8);
-  SPL = (uint8_t)(ptrs.stacks[ptrs.cur] & 0x00FF);
-}
