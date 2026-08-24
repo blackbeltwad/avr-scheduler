@@ -14,17 +14,17 @@ int main(void) {
 }
 
 void FuncA(void) {
+  DDRD |= (1 << 7);
+  PORTD |= (1 << 7);
+  //    DDRD &= ~(1 << 7);
+  //   PORTD &= ~(1 << 7);
   while (1) {
-    DDRD |= (1 << 7);
-    PORTD |= (1 << 7);
-    //    DDRD &= ~(1 << 7);
-    //   PORTD &= ~(1 << 7);
   }
 }
 
 void FuncB(void) {
+  DDRD &= ~(1 << 7);
+  PORTD &= ~(1 << 7);
   while (1) {
-    DDRD &= ~(1 << 7);
-    PORTD &= ~(1 << 7);
   }
 }
