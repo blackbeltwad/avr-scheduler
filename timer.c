@@ -20,7 +20,6 @@ void timer_init(void) {
   // Set the interrupts on OCR0A match
   TIMSK1 |= (1 << 1);
   TIFR1 |= (1 << 1);
-  context_fill();
   // Set global interrupts
   SREG |= (1 << 7);
   scheduler_start();
