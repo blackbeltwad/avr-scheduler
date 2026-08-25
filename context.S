@@ -7,6 +7,7 @@ TIMER1_COMPA_vect:
   push R0
   push R1
   push R2
+  push R3
   push R4
   push R5
   push R6
@@ -39,7 +40,7 @@ TIMER1_COMPA_vect:
   push R25
   LDS R25, 0x005E; SPH
   LDS R24, 0x005D; SPL
-  ;ADIW R24, 1 THIS LINE WAS BREAKING EVERYTHING I GUESS POP DECREMENTS BEFORE POPPING 
+  ;SBIW R24, 1; THIS LINE WAS BREAKING EVERYTHING I GUESS POP DECREMENTS BEFORE POPPING 
   CLR R1 
   ; Get the ptrs address. ptrs is 12 bytes total, stacks is 10, cur and max are 1 
   ; Stack is (0 - 9), Cur is (10), Max is (11)
