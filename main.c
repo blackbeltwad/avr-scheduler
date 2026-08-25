@@ -17,6 +17,8 @@ void FuncA(void) {
   while (1) {
     DDRD |= (1 << 7);
     PORTD |= (1 << 7);
+    DDRD &= ~(1 << 6);
+    PORTD &= ~(1 << 6);
   }
 }
 
@@ -24,5 +26,7 @@ void FuncB(void) {
   while (1) {
     DDRD &= ~(1 << 7);
     PORTD &= ~(1 << 7);
+    DDRD |= (1 << 6);
+    PORTD |= (1 << 6);
   }
 }

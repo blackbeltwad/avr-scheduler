@@ -14,8 +14,8 @@ void timer_init(void) {
   TCCR1B |= (1 << 2);
   TCCR1B &= ~(1 << 1);
   TCCR1B |= (1 << 0);
-  OCR1AH = 0x3D;
-  OCR1AL = 0x09;
+  OCR1AH = 0x0F;
+  OCR1AL = 0x42;
 
   // Set the interrupts on OCR0A match
   TIMSK1 |= (1 << 1);
