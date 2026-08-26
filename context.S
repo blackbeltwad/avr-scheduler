@@ -3,6 +3,7 @@
 #include <avr/io.h>
 .global TIMER1_COMPA_vect
 .extern store_and_pop_stack_pointer
+.extern update_sleep_timer
 TIMER1_COMPA_vect:
   push R0
   push R1
@@ -41,10 +42,14 @@ TIMER1_COMPA_vect:
   LDS R25, 0x005E; SPH
   LDS R24, 0x005D; SPL
   CLR R1 
-  
+  ; ----------------------------------------------------------------------  
   call store_and_pop_stack_pointer
+  CLR R1
   STS 0x005E, R25
   STS 0x005D, R24
+  call update_sleep_timer
+  CLR R1
+  ; ----------------------------------------------------------------------
 
   pop R0; Store Sreg is R0 only trigger at the end
   STS 0x005f, R0

@@ -1,19 +1,30 @@
 #include "scheduler.h"
-#include "timer.h"
 #include <avr/common.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#define MAX_SIZE 256
 #define SPH (*(volatile unsigned char *)0x5E)
+#define POP_SIZE 34
+#define SPH (*(volatile unsigned char *)0x5E)
+
+struct scheduler {
+  struct task *tasks[MAX_STACKS];
+  struct task *current_task;
+  int8_t task_index;
+  int8_t total_tasks;
+};
+
+uint16_t store_and_pop_stack_pointer(uint16_t stack_address);
+void update_sleep_timer(void);
+struct task *select_next_task(void);
 
 // Start before the first valid index; task_create() increments before use.
 struct scheduler scheduler = {
     .tasks = {0}, .current_task = NULL, .task_index = -1, .total_tasks = -1};
 
-void task_create(struct task *task, void (*entry_point)(void)) {
+void task_create(struct task *task, void (*entry_point)(void),
+                 uint8_t priority_value) {
   // Stack grows downwards, move stack pointer to end of array
   task->stack_pointer = &task->stack[MAX_SIZE - 1];
   task->stack[0] = 0xFF;
@@ -33,22 +44,42 @@ void task_create(struct task *task, void (*entry_point)(void)) {
   scheduler.total_tasks++;
   scheduler.tasks[scheduler.task_index] = task;
   scheduler.current_task = task;
+  scheduler.current_task->priority = priority_value;
 }
 
 uint16_t store_and_pop_stack_pointer(uint16_t stack_address) {
 
   scheduler.current_task->stack_pointer = (uint8_t *)stack_address;
-
-  if (scheduler.total_tasks == scheduler.task_index) {
-    scheduler.task_index = 0;
-  } else {
-    scheduler.task_index++;
-  }
+  /*
+    if (scheduler.total_tasks == scheduler.task_index) {
+      scheduler.task_index = 0;
+    } else {
+      scheduler.task_index++;
+    }
+  */
   // Prepare current task for pop
-  scheduler.current_task = scheduler.tasks[scheduler.task_index];
+  scheduler.current_task = select_next_task();
   return (uint16_t)scheduler.current_task->stack_pointer;
 }
 
+struct task *select_next_task() {
+
+  struct task *highest_priority_task;
+  uint8_t highest_priority = 0;
+
+  for (int i = 0; i < scheduler.total_tasks; i++) {
+    struct task *this_task = scheduler.tasks[i];
+
+    if (this_task->state == TASK_READY) {
+      if (this_task->priority > highest_priority) {
+        highest_priority = this_task->priority;
+        highest_priority_task = this_task;
+      }
+    }
+  }
+  return highest_priority_task;
+}
+// Get the function address at the start of the tasks stack and call it
 void scheduler_start() {
 
   volatile uint8_t *stack_pointer = scheduler.current_task->stack_pointer;
@@ -66,8 +97,24 @@ void scheduler_start() {
   uint16_t stack_pointer_high_address = (uint16_t)stack_pointer >> 8;
   uint16_t stack_pointer_low_address = (uint16_t)stack_pointer & 0x00FF;
 
+  // We set stack pointer here to save the two bytes we used in task creation
   SPH = (uint8_t)stack_pointer_high_address;
   SPL = (uint8_t)stack_pointer_low_address;
 
   start_function();
+}
+
+void update_sleep_timer() {
+
+  for (uint8_t i = 0; i < scheduler.total_tasks; i++) {
+    struct task *this_task = scheduler.tasks[i];
+
+    if (this_task->state == TASK_SLEEPING) {
+      this_task->sleep_remaining -= 1;
+
+      if (this_task->sleep_remaining <= 0) {
+        this_task->state = TASK_READY;
+      }
+    }
+  }
 }

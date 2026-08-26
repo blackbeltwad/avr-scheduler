@@ -1,8 +1,9 @@
 #include "timer.h"
-#include "scheduler.h"
 #include <avr/common.h>
 #include <avr/io.h>
-void timer_init(void) {
+#include <stdint.h>
+#define CLOCK_VALUE_MS 0.064
+void timer_init(double time_in_ms) {
 
   // Set the timer to normal
   TCCR1A &= ~(1 << 1);
@@ -14,15 +15,14 @@ void timer_init(void) {
   TCCR1B |= (1 << 2);
   TCCR1B &= ~(1 << 1);
   TCCR1B |= (1 << 0);
-  OCR1AH = 0x0F;
-  OCR1AL = 0x42;
+  uint16_t OCR1A_value = time_in_ms / CLOCK_VALUE_MS;
+
+  OCR1AH = (OCR1A_value >> 8);
+  OCR1AL = (OCR1A_value & 0x00FF);
 
   // Set the interrupts on OCR0A match
   TIMSK1 |= (1 << 1);
   TIFR1 |= (1 << 1);
   // Set global interrupts
   SREG |= (1 << 7);
-  scheduler_start();
-  while (1) {
-  }
 }

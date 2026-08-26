@@ -1,4 +1,5 @@
 #include "scheduler.h"
+#include "state.h"
 #include "timer.h"
 #include <avr/io.h>
 void red_led(void);
@@ -8,9 +9,10 @@ int main(void) {
   struct task A;
   struct task B;
   // Task Creation
-  task_create(&A, &red_led);
-  task_create(&B, &white_led);
-  timer_init();
+  task_create(&A, &red_led, 0);
+  task_create(&B, &white_led, 0);
+  timer_init(1);
+  scheduler_start();
 }
 
 void red_led(void) {
