@@ -15,6 +15,7 @@ struct scheduler {
   int8_t total_tasks;
 };
 
+// Private methods
 uint16_t store_and_pop_stack_pointer(uint16_t stack_address);
 void update_sleep_timer(void);
 struct task *select_next_task(void);
@@ -77,6 +78,7 @@ struct task *select_next_task() {
       }
     }
   }
+  highest_priority_task->state = TASK_RUNNING;
   return highest_priority_task;
 }
 // Get the function address at the start of the tasks stack and call it
@@ -117,4 +119,22 @@ void update_sleep_timer() {
       }
     }
   }
+}
+
+void task_yield() {
+  // Force context switch
+  OCR1AL = 0;
+  OCR1AL = 0;
+  TIFR1 |= (1 << 1);
+}
+
+void task_block() {
+  scheduler.current_task->state = TASK_BLOCKED;
+  task_yield();
+}
+
+void task_sleep(double time_ms) {
+  scheduler.current_task->state = TASK_SLEEPING;
+  scheduler.current_task->state = time_ms;
+  task_yield();
 }
