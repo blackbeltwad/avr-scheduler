@@ -14,8 +14,13 @@ struct task {
   double sleep_remaining;
 };
 
-typedef struct task task;
 void scheduler_start(void);
 void task_create(struct task *task, void (*entry_point)(void),
                  uint8_t priority_value);
+void task_sleep(double time_ms);
+void task_wake();
+void task_block();
+void task_yield(void);
+void set_priority(uint8_t priority_value);
+void task_unblock();
 #endif
