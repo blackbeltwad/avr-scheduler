@@ -1,19 +1,21 @@
 #include "scheduler.h"
+#include "state.h"
 #include "timer.h"
 #include <avr/io.h>
-void FuncA(void);
-void FuncB(void);
+void red_led(void);
+void white_led(void);
 
 int main(void) {
-  struct Task A;
-  struct Task B;
+  struct task A;
+  struct task B;
   // Task Creation
-  Task_Create(&A, &FuncA);
-  Task_Create(&B, &FuncB);
-  timer_init();
+  task_create(&A, &red_led, 0);
+  task_create(&B, &white_led, 0);
+  timer_init(1);
+  scheduler_start();
 }
 
-void FuncA(void) {
+void red_led(void) {
   while (1) {
     DDRD |= (1 << 7);
     PORTD |= (1 << 7);
@@ -22,7 +24,7 @@ void FuncA(void) {
   }
 }
 
-void FuncB(void) {
+void white_led(void) {
   while (1) {
     DDRD &= ~(1 << 7);
     PORTD &= ~(1 << 7);

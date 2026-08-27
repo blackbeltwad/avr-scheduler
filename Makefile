@@ -10,7 +10,7 @@ BAUD = 115200
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -g3 -O0 -Wall -Wextra
 
 TARGET = scheduler
-SRC = main.c scheduler.c timer.c context.S
+SRC = main.c scheduler.c timer.c context.S state.c
 
 all: $(TARGET).elf
 

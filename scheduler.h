@@ -1,24 +1,21 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
-#define MAX_SIZE 256
 #define MAX_STACKS 5
-#define SPH (*(volatile unsigned char *)0x5E)
+#define MAX_SIZE 256
 #include <stdint.h>
 
-// Stack Grows Down , POP is increment, PUSH is decrement
-struct Task {
+enum task_state { TASK_READY, TASK_RUNNING, TASK_BLOCKED, TASK_SLEEPING };
+
+struct task {
   volatile uint8_t stack[MAX_SIZE];
-  volatile uint16_t *sp;
+  volatile uint8_t *stack_pointer;
+  uint8_t priority;
+  enum task_state state;
+  double sleep_remaining;
 };
 
-struct Current_Task {
-  volatile uint16_t stacks[MAX_STACKS];
-  volatile int8_t cur;
-  volatile int8_t max;
-};
-
-void Task_Create(struct Task *task, void (*Func)(void));
-void context_fill(void);
+typedef struct task task;
 void scheduler_start(void);
-
+void task_create(struct task *task, void (*entry_point)(void),
+                 uint8_t priority_value);
 #endif
