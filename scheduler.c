@@ -6,6 +6,7 @@
 #include <stdint.h>
 #define SPH (*(volatile unsigned char *)0x5E)
 #define POP_SIZE 34
+#define ARG_SIZE 25
 #define SPH (*(volatile unsigned char *)0x5E)
 
 struct scheduler {
@@ -24,8 +25,8 @@ struct task *select_next_task(void);
 struct scheduler scheduler = {
     .tasks = {0}, .current_task = NULL, .task_index = -1, .total_tasks = -1};
 
-void task_create(struct task *task, void (*entry_point)(void),
-                 uint8_t priority_value) {
+void task_create(struct task *task, void (*entry_point)(void *),
+                 uint8_t priority_value, void *entry_argument) {
   // Stack grows downwards, move stack pointer to end of array
   task->stack_pointer = &task->stack[MAX_SIZE - 1];
   task->stack[0] = 0xFF;
@@ -35,16 +36,30 @@ void task_create(struct task *task, void (*entry_point)(void),
   uint8_t entry_point_high_byte = entry_point_address >> 8;
   uint8_t entry_point_low_byte = entry_point_address & 0x00FF;
 
+  // Store arg to pass into context switch R25-R24
+  uint16_t entry_arg_address = (uint16_t)entry_argument;
+  uint8_t entry_arg_high_byte = entry_arg_address >> 8;
+  uint8_t entry_arg_low_byte = entry_arg_address & 0x00FF;
+
   *task->stack_pointer = entry_point_low_byte;
   // We pushed a byte so we DECREMENT
   task->stack_pointer--;
   *task->stack_pointer = entry_point_high_byte;
+
+  task->stack_pointer -= ARG_SIZE;
+  // Inside R24
+  *task->stack_pointer = entry_arg_low_byte;
+  // Inside R25
+  task->stack_pointer--;
+  *task->stack_pointer = entry_arg_high_byte;
+  task->stack_pointer += ARG_SIZE + 1;
   task->stack_pointer -= POP_SIZE;
 
   scheduler.task_index++;
   scheduler.total_tasks++;
   scheduler.tasks[scheduler.task_index] = task;
   scheduler.current_task = task;
+  scheduler.current_task->task_arg = entry_argument;
   scheduler.current_task->priority = priority_value;
 }
 
@@ -57,28 +72,47 @@ uint16_t store_and_pop_stack_pointer(uint16_t stack_address) {
     } else {
       scheduler.task_index++;
     }
-  */
-  // Prepare current task for pop
+
+   Prepare current task for pop
+   scheduler.current_task = scheduler.tasks[scheduler.task_index];
+   */
   scheduler.current_task = select_next_task();
   return (uint16_t)scheduler.current_task->stack_pointer;
 }
 
 struct task *select_next_task() {
-
-  struct task *highest_priority_task;
+  struct task *highest_priority_task = NULL;
   uint8_t highest_priority = 0;
 
+  // Find highest priority among READY tasks
   for (int i = 0; i < scheduler.total_tasks; i++) {
     struct task *this_task = scheduler.tasks[i];
 
-    if (this_task->state == TASK_READY) {
-      if (this_task->priority > highest_priority) {
-        highest_priority = this_task->priority;
-        highest_priority_task = this_task;
-      }
+    if (this_task->state == TASK_READY &&
+        this_task->priority > highest_priority) {
+
+      highest_priority = this_task->priority;
+      highest_priority_task = this_task;
     }
   }
+
+  // Search circularly for the next READY task
+  for (int i = 1; i <= scheduler.total_tasks; i++) {
+    int index = (scheduler.task_index + i) % scheduler.total_tasks;
+    struct task *this_task = scheduler.tasks[index];
+
+    if (this_task->state == TASK_READY &&
+        this_task->priority == highest_priority) {
+
+      scheduler.task_index = index;
+      highest_priority_task = this_task;
+      break;
+    }
+  }
+
+  scheduler.current_task->state = TASK_READY;
   highest_priority_task->state = TASK_RUNNING;
+
   return highest_priority_task;
 }
 // Get the function address at the start of the tasks stack and call it
@@ -94,7 +128,8 @@ void scheduler_start() {
   uint16_t function_address =
       ((uint16_t)function_address_high_byte << 8) | function_address_low_byte;
 
-  void (*start_function)(void) = (void (*)(void))function_address;
+  void (*start_function)(volatile void *) =
+      (void (*)(volatile void *))function_address;
 
   uint16_t stack_pointer_high_address = (uint16_t)stack_pointer >> 8;
   uint16_t stack_pointer_low_address = (uint16_t)stack_pointer & 0x00FF;
@@ -103,7 +138,7 @@ void scheduler_start() {
   SPH = (uint8_t)stack_pointer_high_address;
   SPL = (uint8_t)stack_pointer_low_address;
 
-  start_function();
+  start_function(scheduler.current_task->task_arg);
 }
 
 void update_sleep_timer() {
@@ -116,6 +151,7 @@ void update_sleep_timer() {
 
       if (this_task->sleep_remaining <= 0) {
         this_task->state = TASK_READY;
+        this_task->sleep_remaining = 0;
       }
     }
   }
@@ -128,9 +164,15 @@ void task_yield() {
   TIFR1 |= (1 << 1);
 }
 
-void task_block() {
-  scheduler.current_task->state = TASK_BLOCKED;
+void task_block(void *arg) {
+  struct task *this_task = arg;
+  this_task->state = TASK_BLOCKED;
   task_yield();
+}
+
+void task_unblock(void *arg) {
+  struct task *this_task = arg;
+  this_task->state = TASK_READY;
 }
 
 void task_sleep(double time_ms) {
@@ -138,3 +180,9 @@ void task_sleep(double time_ms) {
   scheduler.current_task->state = time_ms;
   task_yield();
 }
+
+void set_priority(uint8_t priority_value) {
+  scheduler.current_task->priority = priority_value;
+}
+
+struct task *get_current_task() { return scheduler.current_task; }
