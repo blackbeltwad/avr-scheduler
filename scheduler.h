@@ -13,6 +13,7 @@ struct task {
   volatile void *task_arg;
   enum task_state state;
   double sleep_remaining;
+  uint8_t owns_mutex;
 };
 
 void scheduler_start(void);

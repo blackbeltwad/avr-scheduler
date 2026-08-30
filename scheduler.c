@@ -61,44 +61,53 @@ void task_create(struct task *task, void (*entry_point)(void *),
   scheduler.current_task = task;
   scheduler.current_task->task_arg = entry_argument;
   scheduler.current_task->priority = priority_value;
+  task->state = TASK_READY;
 }
 
 uint16_t store_and_pop_stack_pointer(uint16_t stack_address) {
 
   scheduler.current_task->stack_pointer = (uint8_t *)stack_address;
   /*
-    if (scheduler.total_tasks == scheduler.task_index) {
-      scheduler.task_index = 0;
-    } else {
-      scheduler.task_index++;
-    }
+  if (scheduler.total_tasks == scheduler.task_index) {
+    scheduler.task_index = 0;
+  } else {
+    scheduler.task_index++;
+  }
 
-   Prepare current task for pop
-   scheduler.current_task = scheduler.tasks[scheduler.task_index];
-   */
+  //  Prepare current task for pop
+  scheduler.current_task = scheduler.tasks[scheduler.task_index];
+  */
   scheduler.current_task = select_next_task();
   return (uint16_t)scheduler.current_task->stack_pointer;
 }
-
+// Get the function address at the start of the tasks stack and call it
 struct task *select_next_task() {
   struct task *highest_priority_task = NULL;
   uint8_t highest_priority = 0;
+  uint8_t task_count = scheduler.total_tasks + 1;
 
   // Find highest priority among READY tasks
-  for (int i = 0; i < scheduler.total_tasks; i++) {
+  for (int i = 0; i <= scheduler.total_tasks; i++) {
     struct task *this_task = scheduler.tasks[i];
 
     if (this_task->state == TASK_READY &&
-        this_task->priority > highest_priority) {
+        this_task->priority >= highest_priority) {
 
       highest_priority = this_task->priority;
       highest_priority_task = this_task;
     }
   }
 
-  // Search circularly for the next READY task
+  // No READY task at all
+  // Add a fallback here maybe
+  if (highest_priority_task == NULL) {
+    return scheduler.current_task;
+  }
+
+  // Search circularly for the next READY task at that priority,
+  // starting just after the currently running task
   for (int i = 1; i <= scheduler.total_tasks; i++) {
-    int index = (scheduler.task_index + i) % scheduler.total_tasks;
+    int index = (scheduler.task_index + i) % task_count;
     struct task *this_task = scheduler.tasks[index];
 
     if (this_task->state == TASK_READY &&
@@ -115,7 +124,6 @@ struct task *select_next_task() {
 
   return highest_priority_task;
 }
-// Get the function address at the start of the tasks stack and call it
 void scheduler_start() {
 
   volatile uint8_t *stack_pointer = scheduler.current_task->stack_pointer;
@@ -161,24 +169,31 @@ void task_yield() {
   // Force context switch
   OCR1AL = 0;
   OCR1AL = 0;
+
   TIFR1 |= (1 << 1);
 }
 
 void task_block(void *arg) {
+  cli();
   struct task *this_task = arg;
   this_task->state = TASK_BLOCKED;
   task_yield();
+  sei();
 }
 
 void task_unblock(void *arg) {
+  cli();
   struct task *this_task = arg;
   this_task->state = TASK_READY;
+  sei();
 }
 
 void task_sleep(double time_ms) {
+  cli();
   scheduler.current_task->state = TASK_SLEEPING;
-  scheduler.current_task->state = time_ms;
+  scheduler.current_task->sleep_remaining = time_ms;
   task_yield();
+  sei();
 }
 
 void set_priority(uint8_t priority_value) {
