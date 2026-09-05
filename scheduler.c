@@ -61,6 +61,7 @@ void task_create(struct task *task, void (*entry_point)(void *),
   scheduler.current_task = task;
   scheduler.current_task->task_arg = entry_argument;
   scheduler.current_task->priority = priority_value;
+  scheduler.current_task->base_priority = priority_value;
   task->state = TASK_READY;
 }
 

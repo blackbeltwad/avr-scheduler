@@ -9,11 +9,11 @@ enum task_state { TASK_READY, TASK_RUNNING, TASK_BLOCKED, TASK_SLEEPING };
 struct task {
   volatile uint8_t stack[MAX_SIZE];
   volatile uint8_t *stack_pointer;
-  uint8_t priority;
+  uint8_t priority; // Priority stat that gets bumped
   volatile void *task_arg;
   enum task_state state;
   double sleep_remaining;
-  uint8_t owns_mutex;
+  uint8_t base_priority; // Regular priority
 };
 
 void scheduler_start(void);

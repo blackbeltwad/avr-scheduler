@@ -1,0 +1,32 @@
+this is it for avr-scheduler moving onto fleurr
+I like this project a lot more than any webdev stuff Ive made
+priority, function calling register conventions, context switch, revisioning the code like my first
+full assembly no C context switch
+Fleurr will be everything I wanted this to be, it will have a more organized code base
+strong file structure, more updatable code / scalable? Making my internal structs "private" and more readable code
+
+Some features I really want to add
+-stack overflow detection
+-dynamic task allocation
+-task statistics/profiling
+
+All in all a lot of memory techniques probably I need patterns or something to guard the memory
+Then I build communication projects using my rtos with spi, i2c, uart, usart, can maybe
+well actually communication projects first then what I just mentioned more effective for the resume
+i dont really think i will like making these communication projects but we do what we got to do 
+
+I started embedded this august, I liked it more than I thought its my main focus now, my most productive month
+ever as of now
+
+I like C a lot, I learn much how the computer really works, I guess really the necessary amount of information that 
+the cpu needs to determine things at runtime with no extra help. It makes me think far more than whatever language
+I was familliar with
+
+I dont like webdev it just doesnt suit me
+I'd rather write more efficient code, optimize something, push something to its limits, something new
+somewhere not well known
+
+Maybe compilers? ML compilers stuff sounds cool to me
+
+Anyways onto Fleurr OS
+
