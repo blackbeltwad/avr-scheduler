@@ -4,7 +4,7 @@ CC = avr-gcc
 OBJCOPY = avr-objcopy
 AVRDUDE = avrdude
 
-PORT = /dev/cu.usbmodem1101
+PORT = /dev/cu.usbmodem101
 BAUD = 115200
 
 CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -g3 -O0 -Wall -Wextra
